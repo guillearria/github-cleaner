@@ -29,9 +29,10 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.11+ (3.13 not fully supported yet)
 - Node.js 16+
 - GitHub Personal Access Token with repo scope
+- Git
 
 ## Installation
 
@@ -44,10 +45,14 @@ cd github-cleaner/backend
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+source venv/bin/activate  # On Windows with Git Bash: source venv/Scripts/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install the package in development mode
+pip install -e .
+
+# Create environment file
+cp .env.example .env
+# Edit .env and add your GitHub token for testing
 
 # Start the backend server
 uvicorn app.main:app --reload
@@ -64,6 +69,47 @@ npm install
 
 # Start the development server
 npm start
+```
+
+## Development
+
+### Backend Development Setup
+
+The backend is set up as a Python package for better development experience. The structure is:
+
+```
+github-cleaner/
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── services/        # API integration
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── types/          # TypeScript definitions
+├── backend/
+│   ├── app/                # Main application package
+│   │   ├── api/            # API routes
+│   │   ├── services/       # Business logic
+│   │   ├── models/         # Data models
+│   │   └── core/           # Core configuration
+│   ├── tests/              # Test files
+│   └── setup.py           # Package setup file
+```
+
+### Environment Variables
+
+The backend requires the following environment variables:
+
+```env
+# FastAPI Settings
+API_HOST=0.0.0.0
+API_PORT=8000
+DEBUG=True
+
+# CORS Settings
+FRONTEND_URL=http://localhost:3000
+
+# GitHub Settings (for testing)
+GITHUB_TEST_TOKEN=your_github_token_here
 ```
 
 ## API Documentation
@@ -147,45 +193,17 @@ Authorization: Bearer <github_token>
   }
   ```
 
-## Development Guidelines
-
-### Code Structure
-
-```
-github-cleaner/
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── services/        # API integration
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── types/          # TypeScript definitions
-├── backend/
-│   ├── app/
-│   │   ├── api/            # API routes
-│   │   ├── services/       # Business logic
-│   │   └── models/         # Data models
-├── tests/                  # Test files
-└── docs/                   # Additional documentation
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ### Testing
 
+The project uses pytest for testing. To run tests:
+
 ```bash
-# Backend tests
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
+
+# Run tests with coverage report
 cd backend
 pytest
-
-# Frontend tests
-cd frontend
-npm test
 ```
 
 ## Security Considerations
