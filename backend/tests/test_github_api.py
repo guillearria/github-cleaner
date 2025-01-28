@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
+from app.services.github_service import GitHubService
+
 def test_validate_token_valid(client: TestClient, github_service):
     headers = {"Authorization": f"Bearer {github_service.github._Github__requester._Requester__authorizationHeader}"}
     response = client.post("/api/validate-token", headers=headers)
