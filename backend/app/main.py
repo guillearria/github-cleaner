@@ -1,16 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import get_settings, Settings
 
 app = FastAPI(
     title="GitHub Cleaner API",
     description="API for managing and archiving GitHub repositories in bulk",
     version="1.0.0",
+    debug=get_settings().DEBUG
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=get_settings().CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,8 +21,11 @@ app.add_middleware(
 
 # Health check endpoint
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+async def health_check(settings: Settings = Depends(get_settings)):
+    return {
+        "status": "healthy",
+        "debug": settings.DEBUG
+    }
 
 # Import and include routers
 from app.api import github
