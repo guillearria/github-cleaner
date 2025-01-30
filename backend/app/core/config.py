@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from functools import lru_cache
 from typing import List
 
@@ -15,9 +16,10 @@ class Settings(BaseSettings):
     # GitHub Settings
     GITHUB_TEST_TOKEN: str = ""
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=True
+    )
 
 @lru_cache()
 def get_settings() -> Settings:

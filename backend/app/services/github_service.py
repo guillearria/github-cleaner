@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import HTTPException, Header
-from github import Github, GithubException
+from github import Github, GithubException, Auth
 import math
 
 from app.models.github import (
@@ -13,7 +13,8 @@ from app.models.github import (
 
 class GitHubService:
     def __init__(self, token: str):
-        self.github = Github(token)
+        auth = Auth.Token(token)
+        self.github = Github(auth=auth)
 
     @staticmethod
     def get_token_from_header(authorization: str = Header(...)):

@@ -1,11 +1,14 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
+from github import Auth
 
 from app.services.github_service import GitHubService
+from app.core.config import get_settings
 
 def test_validate_token_valid(client: TestClient, github_service):
-    headers = {"Authorization": f"Bearer {github_service.github._Github__requester._Requester__authorizationHeader}"}
+    settings = get_settings()
+    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
     response = client.post("/api/validate-token", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -24,7 +27,8 @@ def test_validate_token_missing(client: TestClient):
     assert response.status_code == 422
 
 def test_list_repositories(client: TestClient, github_service):
-    headers = {"Authorization": f"Bearer {github_service.github._Github__requester._Requester__authorizationHeader}"}
+    settings = get_settings()
+    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
     response = client.get("/api/repositories", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -34,7 +38,8 @@ def test_list_repositories(client: TestClient, github_service):
     assert "total_pages" in data
 
 def test_list_repositories_with_params(client: TestClient, github_service):
-    headers = {"Authorization": f"Bearer {github_service.github._Github__requester._Requester__authorizationHeader}"}
+    settings = get_settings()
+    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
     params = {
         "page": 1,
         "per_page": 5,

@@ -28,8 +28,8 @@ async def list_repositories(
     page: int = Query(1, ge=1),
     per_page: int = Query(30, ge=1, le=100),
     search: Optional[str] = None,
-    sort: Optional[str] = Query(None, regex="^(updated|name|stars)$"),
-    order: Optional[str] = Query(None, regex="^(asc|desc)$"),
+    sort: Optional[str] = Query(None, pattern="^(updated|name|stars)$"),
+    order: Optional[str] = Query(None, pattern="^(asc|desc)$"),
     github_service: GitHubService = Depends(get_github_service)
 ):
     """Get list of repositories with pagination and filtering options."""
