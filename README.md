@@ -17,15 +17,17 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 
 ## Tech Stack
 
-### Frontend
-- React with TypeScript
-- Material-UI for components
-- Axios for API calls
-
 ### Backend
 - Python FastAPI
 - PyGithub for GitHub API integration
 - Pydantic for data validation
+- Docker for containerization
+- AWS (ECR & ECS) for deployment
+
+### Frontend (Coming Soon)
+- React with TypeScript
+- Material-UI for components
+- Axios for API calls
 
 ## Prerequisites
 
@@ -33,11 +35,13 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 - Node.js 16+
 - GitHub Personal Access Token with repo scope
 - Git
+- Docker (for production deployment)
 
-## Installation
+## Quick Start
 
-### Backend Setup
+### Local Development
 
+1. **Clone and Setup**
 ```bash
 # Clone the repository
 git clone https://github.com/guillearria/github-cleaner.git
@@ -49,75 +53,73 @@ source venv/bin/activate  # On Windows with Git Bash: source venv/Scripts/activa
 
 # Install the package in development mode
 pip install -e .
-
-# Create environment file
-cp .env.example .env
-# Edit .env and add your GitHub token for testing
-
-# Start the backend server
-uvicorn app.main:app --reload
 ```
 
-### Frontend Setup
-
+2. **Configure Environment**
 ```bash
-# Navigate to frontend directory
-cd frontend
+# Copy environment file and edit it
+cp .env.example .env
 
-# Install dependencies
-npm install
-
-# Start the development server
-npm start
-```
-
-## Development
-
-### Backend Development Setup
-
-The backend is set up as a Python package for better development experience. The structure is:
-
-```
-github-cleaner/
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── services/        # API integration
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── types/          # TypeScript definitions
-├── backend/
-│   ├── app/                # Main application package
-│   │   ├── api/            # API routes
-│   │   ├── services/       # Business logic
-│   │   ├── models/         # Data models
-│   │   └── core/           # Core configuration
-│   ├── tests/              # Test files
-│   └── setup.py           # Package setup file
-```
-
-### Environment Variables
-
-The backend requires the following environment variables:
-
-```env
-# FastAPI Settings
+# Required variables in .env:
 API_HOST=0.0.0.0
 API_PORT=8000
 DEBUG=True
-
-# CORS Settings
 FRONTEND_URL=http://localhost:3000
-
-# GitHub Settings (for testing)
 GITHUB_TEST_TOKEN=your_github_token_here
+```
+
+3. **Run the Server**
+```bash
+uvicorn app.main:app --reload
+```
+
+### Testing
+
+```bash
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
+
+# Run tests with coverage
+cd backend
+pytest
+```
+
+### Docker Build (Production)
+
+```bash
+cd backend
+docker build -t github-cleaner-backend .
+docker run -p 8000:8000 github-cleaner-backend
+```
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment.
+
+### CI Pipeline (on every push and PR)
+- Runs Python 3.11 tests
+- Performs code linting (black & flake8)
+- Generates test coverage reports
+- Uploads coverage to Codecov
+
+### CD Pipeline (on main branch and tags)
+- Builds Docker image
+- Pushes to Amazon ECR
+- Deploys to ECS
+
+### Required Secrets
+Set these in your GitHub repository settings:
+```
+GITHUB_TEST_TOKEN - For running tests
+AWS_ACCESS_KEY_ID - For AWS access
+AWS_SECRET_ACCESS_KEY - For AWS access
+AWS_REGION - Your AWS region
 ```
 
 ## API Documentation
 
 ### Authentication
-
-All API endpoints require a valid GitHub token to be passed in the Authorization header.
-
+All endpoints require GitHub token:
 ```
 Authorization: Bearer <github_token>
 ```
@@ -125,99 +127,59 @@ Authorization: Bearer <github_token>
 ### Endpoints
 
 #### 1. Validate Token
-- **URL**: `/api/validate-token`
-- **Method**: `POST`
-- **Description**: Validates the provided GitHub token
-- **Request Body**: None
-- **Response**:
-  ```json
-  {
-    "valid": boolean,
-    "username": string
-  }
-  ```
-
-#### 2. List Repositories
-- **URL**: `/api/repositories`
-- **Method**: `GET`
-- **Description**: Retrieves user's repositories with pagination
-- **Query Parameters**:
-  - `page`: Page number (default: 1)
-  - `per_page`: Items per page (default: 30)
-  - `search`: Search term (optional)
-  - `sort`: Sort field (optional: "updated", "name", "stars")
-  - `order`: Sort order (optional: "asc", "desc")
-- **Response**:
-  ```json
-  {
-    "repositories": [
-      {
-        "id": number,
-        "name": string,
-        "full_name": string,
-        "description": string,
-        "archived": boolean,
-        "updated_at": string,
-        "stars": number,
-        "language": string
-      }
-    ],
-    "total_count": number,
-    "current_page": number,
-    "total_pages": number
-  }
-  ```
-
-#### 3. Archive Repositories
-- **URL**: `/api/archive`
-- **Method**: `POST`
-- **Description**: Archives multiple repositories
-- **Request Body**:
-  ```json
-  {
-    "repository_ids": number[]
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "success": boolean,
-    "archived_count": number,
-    "failed_repositories": [
-      {
-        "id": number,
-        "name": string,
-        "error": string
-      }
-    ]
-  }
-  ```
-
-### Testing
-
-The project uses pytest for testing. To run tests:
-
-```bash
-# Install test dependencies
-pip install pytest pytest-asyncio pytest-cov
-
-# Run tests with coverage report
-cd backend
-pytest
+```
+POST /api/validate-token
+Response: { "valid": boolean, "username": string }
 ```
 
-## Security Considerations
+#### 2. List Repositories
+```
+GET /api/repositories
+Query params:
+- page: number (default: 1)
+- per_page: number (default: 30, max: 100)
+- search: string (optional)
+- sort: "updated" | "name" | "stars"
+- order: "asc" | "desc"
+```
 
-- GitHub tokens are stored only in session storage
-- All sensitive operations are performed through the backend
-- Rate limiting is implemented to prevent API abuse
-- Input validation is performed on all endpoints
-- CORS protection is enabled
+#### 3. Archive Repositories
+```
+POST /api/archive
+Body: { "repository_ids": number[] }
+```
+
+## Project Structure
+```
+github-cleaner/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # API routes
+│   │   ├── core/         # Core configuration
+│   │   ├── models/       # Pydantic models
+│   │   └── services/     # Business logic
+│   ├── tests/            # Test files
+│   ├── Dockerfile        # Production container
+│   └── setup.py         # Package setup
+├── .github/
+│   └── workflows/        # CI/CD pipelines
+└── frontend/            # Coming soon
+```
+
+## Security
+
+- GitHub tokens stored only in session storage
+- All sensitive operations through backend
+- Rate limiting for API abuse prevention
+- Input validation on all endpoints
+- CORS protection enabled
+- Containerized deployment
+- Environment-based configuration
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE)
 
 ## Support
 
-For support, please open an issue in the GitHub repository or contact the maintainers.
+Open an issue or contact maintainers for support.
