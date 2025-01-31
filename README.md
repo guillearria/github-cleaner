@@ -65,7 +65,7 @@ API_HOST=0.0.0.0
 API_PORT=8000
 DEBUG=True
 FRONTEND_URL=http://localhost:3000
-GITHUB_TEST_TOKEN=your_github_token_here
+GH_TEST_TOKEN=your_github_token_here  # Your GitHub Personal Access Token
 ```
 
 3. **Run the Server**
@@ -110,7 +110,7 @@ The project uses GitHub Actions for continuous integration and deployment.
 ### Required Secrets
 Set these in your GitHub repository settings:
 ```
-GITHUB_TEST_TOKEN - For running tests
+GH_TEST_TOKEN - For running tests (GitHub Personal Access Token)
 AWS_ACCESS_KEY_ID - For AWS access
 AWS_SECRET_ACCESS_KEY - For AWS access
 AWS_REGION - Your AWS region

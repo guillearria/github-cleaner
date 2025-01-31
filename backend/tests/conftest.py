@@ -18,6 +18,6 @@ def client() -> Generator:
 @pytest.fixture
 def github_service() -> GitHubService:
     settings = get_settings()
-    if not settings.GITHUB_TEST_TOKEN:
-        pytest.skip("GITHUB_TEST_TOKEN not set in environment")
-    return GitHubService(settings.GITHUB_TEST_TOKEN) 
+    if not settings.GH_TEST_TOKEN:
+        pytest.skip("GH_TEST_TOKEN not set in environment")
+    return GitHubService(settings.GH_TEST_TOKEN) 

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
     # GitHub Settings
-    GITHUB_TEST_TOKEN: str = ""
+    GH_TEST_TOKEN: str = ""
 
     model_config = ConfigDict(
         env_file=".env",

@@ -39,7 +39,7 @@ jobs:
 
     - name: Run tests
       env:
-        GITHUB_TEST_TOKEN: ${{ secrets.GITHUB_TEST_TOKEN }}
+        GH_TEST_TOKEN: ${{ secrets.GH_TEST_TOKEN }}
       run: |
         pytest --cov=app --cov-report=xml
 

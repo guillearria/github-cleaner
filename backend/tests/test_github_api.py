@@ -8,7 +8,7 @@ from app.core.config import get_settings
 
 def test_validate_token_valid(client: TestClient, github_service):
     settings = get_settings()
-    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
+    headers = {"Authorization": f"Bearer {settings.GH_TEST_TOKEN}"}
     response = client.post("/api/validate-token", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -28,7 +28,7 @@ def test_validate_token_missing(client: TestClient):
 
 def test_list_repositories(client: TestClient, github_service):
     settings = get_settings()
-    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
+    headers = {"Authorization": f"Bearer {settings.GH_TEST_TOKEN}"}
     response = client.get("/api/repositories", headers=headers)
     assert response.status_code == 200
     data = response.json()
@@ -39,7 +39,7 @@ def test_list_repositories(client: TestClient, github_service):
 
 def test_list_repositories_with_params(client: TestClient, github_service):
     settings = get_settings()
-    headers = {"Authorization": f"Bearer {settings.GITHUB_TEST_TOKEN}"}
+    headers = {"Authorization": f"Bearer {settings.GH_TEST_TOKEN}"}
     params = {
         "page": 1,
         "per_page": 5,
