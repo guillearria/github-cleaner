@@ -17,6 +17,8 @@ import {
     IconButton,
     Chip,
     Stack,
+    Skeleton,
+    LinearProgress,
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -107,6 +109,34 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
         setPage(0);
     };
 
+    // Add loading skeleton rows
+    const LoadingRows = () => (
+        <>
+            {[...Array(rowsPerPage)].map((_, index) => (
+                <TableRow key={index}>
+                    <TableCell padding="checkbox">
+                        <Skeleton variant="rectangular" width={20} height={20} />
+                    </TableCell>
+                    <TableCell>
+                        <Box>
+                            <Skeleton variant="text" width={200} />
+                            <Skeleton variant="text" width={300} />
+                        </Box>
+                    </TableCell>
+                    <TableCell>
+                        <Skeleton variant="text" width={100} />
+                    </TableCell>
+                    <TableCell align="right">
+                        <Skeleton variant="text" width={50} />
+                    </TableCell>
+                    <TableCell>
+                        <Skeleton variant="text" width={80} />
+                    </TableCell>
+                </TableRow>
+            ))}
+        </>
+    );
+
     return (
         <Box sx={{ p: 3 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
@@ -120,7 +150,12 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
 
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            <Paper sx={{ width: '100%', mb: 2 }}>
+            <Paper sx={{ width: '100%', mb: 2, position: 'relative' }}>
+                {/* Show linear progress when paginating or searching */}
+                {loading && repositories.length > 0 && (
+                    <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />
+                )}
+
                 <Box sx={{ p: 2, display: 'flex', gap: 2 }}>
                     <TextField
                         placeholder="Search repositories..."
@@ -153,6 +188,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
                                         indeterminate={selected.length > 0 && selected.length < repositories.filter(repo => !repo.archived).length}
                                         checked={selected.length === repositories.filter(repo => !repo.archived).length}
                                         onChange={handleSelectAll}
+                                        disabled={loading}
                                     />
                                 </TableCell>
                                 <TableCell>Repository</TableCell>
@@ -162,56 +198,69 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {repositories.map((repo) => (
-                                <TableRow
-                                    key={repo.id}
-                                    hover
-                                    selected={selected.includes(repo.id)}
-                                >
-                                    <TableCell padding="checkbox">
-                                        <Checkbox
-                                            checked={selected.includes(repo.id)}
-                                            onChange={() => handleSelect(repo.id)}
-                                            disabled={repo.archived}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Box>
-                                            <Typography variant="body1">
-                                                {repo.name}
-                                            </Typography>
-                                            {repo.description && (
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {repo.description}
-                                                </Typography>
-                                            )}
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell>
-                                        {repo.language && (
-                                            <Chip
-                                                icon={<CodeIcon />}
-                                                label={repo.language}
-                                                size="small"
-                                                variant="outlined"
+                            {loading && repositories.length === 0 ? (
+                                <LoadingRows />
+                            ) : (
+                                repositories.map((repo) => (
+                                    <TableRow
+                                        key={repo.id}
+                                        hover
+                                        selected={selected.includes(repo.id)}
+                                    >
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                checked={selected.includes(repo.id)}
+                                                onChange={() => handleSelect(repo.id)}
+                                                disabled={repo.archived}
                                             />
-                                        )}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={0.5}>
-                                            <StarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                            <Typography>{repo.stars}</Typography>
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={repo.archived ? 'Archived' : 'Active'}
-                                            color={repo.archived ? 'default' : 'success'}
-                                            size="small"
-                                        />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Box>
+                                                <Typography variant="body1">
+                                                    {repo.name}
+                                                </Typography>
+                                                {repo.description && (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {repo.description}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            {repo.language && (
+                                                <Chip
+                                                    icon={<CodeIcon />}
+                                                    label={repo.language}
+                                                    size="small"
+                                                    variant="outlined"
+                                                />
+                                            )}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={0.5}>
+                                                <StarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                                <Typography>{repo.stars}</Typography>
+                                            </Stack>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={repo.archived ? 'Archived' : 'Active'}
+                                                color={repo.archived ? 'default' : 'success'}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                            {!loading && repositories.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                        <Typography color="text.secondary">
+                                            No repositories found
+                                        </Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -227,6 +276,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
                         setRowsPerPage(parseInt(event.target.value, 10));
                         setPage(0);
                     }}
+                    disabled={loading}
                 />
             </Paper>
         </Box>
