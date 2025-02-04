@@ -31,7 +31,7 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 
 ## Prerequisites
 
-- Python 3.11+ (3.13 not fully supported yet)
+- Python 3.11 (Required - newer versions not yet supported)
 - Node.js 16+
 - GitHub Personal Access Token with repo scope
 - Git
@@ -48,7 +48,7 @@ git clone https://github.com/guillearria/github-cleaner.git
 cd github-cleaner/backend
 
 # Create virtual environment
-python -m venv venv
+python -3.11 -m venv venv
 source venv/bin/activate  # On Windows with Git Bash: source venv/Scripts/activate
 
 # Install the package in development mode
