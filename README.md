@@ -48,11 +48,11 @@ git clone https://github.com/guillearria/github-cleaner.git
 cd github-cleaner/backend
 
 # Create virtual environment
-python -3.11 -m venv venv
-source venv/bin/activate  # On Windows with Git Bash: source venv/Scripts/activate
+py -3.11 -m venv venv
+source venv/Scripts/activate  # On Windows with Git Bash: source venv/Scripts/activate
 
 # Install the package in development mode
-pip install -e .
+pip install -e .  # This installs the project as an editable package
 ```
 
 2. **Configure Environment**
@@ -152,19 +152,25 @@ Body: { "repository_ids": number[] }
 ## Project Structure
 ```
 github-cleaner/
-├── backend/
-│   ├── app/
+├── backend/                # Python package root
+│   ├── app/               # Main application package
 │   │   ├── api/          # API routes
 │   │   ├── core/         # Core configuration
 │   │   ├── models/       # Pydantic models
 │   │   └── services/     # Business logic
 │   ├── tests/            # Test files
-│   ├── Dockerfile        # Production container
-│   └── setup.py         # Package setup
+│   ├── setup.py          # Package configuration
+│   ├── requirements.txt  # Project dependencies
+│   └── Dockerfile        # Production container
 ├── .github/
 │   └── workflows/        # CI/CD pipelines
 └── frontend/            # Coming soon
 ```
+
+The backend is set up as a proper Python package, which means:
+- It can be installed with pip (we use `pip install -e .` for development)
+- It has a clear dependency structure (defined in setup.py)
+- It supports absolute imports (e.g., `from app.models import X`)
 
 ## Security
 
