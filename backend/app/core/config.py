@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     # CORS Settings
     FRONTEND_URL: str = "http://localhost:3000"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     # GitHub Settings
     GH_TEST_TOKEN: str = ""
