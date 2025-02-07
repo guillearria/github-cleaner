@@ -40,7 +40,7 @@ class GitHubService:
     async def list_repositories(
         self,
         page: int = 1,
-        per_page: int = 30,
+        per_page: int = 100,
         search: Optional[str] = None,
         sort: Optional[str] = None,
         order: Optional[str] = None
@@ -48,31 +48,38 @@ class GitHubService:
         """Get list of repositories with pagination and filtering."""
         try:
             user = self.github.get_user()
-            repos = user.get_repos()
             
-            # Apply filters
-            filtered_repos = []
-            for repo in repos:
-                if search and search.lower() not in repo.name.lower():
-                    continue
-                filtered_repos.append(repo)
+            # Get paginated repositories using GitHub's pagination
+            if search:
+                # If searching, we need to use the search API
+                # Add 'user:username' to only get repos owned by the user
+                query = f"user:{user.login} {search} in:name"
+                repos = self.github.search_repositories(query)
+                total_count = repos.totalCount
+            else:
+                # Get repositories with sorting if specified
+                kwargs = {
+                    "affiliation": "owner"  # Only get repositories owned by the user
+                }
+                
+                if sort:
+                    direction = "desc" if order == "desc" else "asc"
+                    kwargs["direction"] = direction
+                    
+                    if sort == "updated":
+                        kwargs["sort"] = "updated"
+                    elif sort == "name":
+                        kwargs["sort"] = "full_name"
+                    elif sort == "stars":
+                        kwargs["sort"] = "stargazers"
+                
+                # Single API call for both repos and count
+                repos = user.get_repos(**kwargs)
+                total_count = repos.totalCount
 
-            # Apply sorting
-            if sort:
-                reverse = order == "desc"
-                if sort == "updated":
-                    filtered_repos.sort(key=lambda x: x.updated_at, reverse=reverse)
-                elif sort == "name":
-                    filtered_repos.sort(key=lambda x: x.name.lower(), reverse=reverse)
-                elif sort == "stars":
-                    filtered_repos.sort(key=lambda x: x.stargazers_count, reverse=reverse)
-
-            # Calculate pagination
-            total_count = len(filtered_repos)
+            # Get the specific page
+            page_repos = repos.get_page(page - 1)  # GitHub uses 0-based indexing
             total_pages = math.ceil(total_count / per_page)
-            start_idx = (page - 1) * per_page
-            end_idx = start_idx + per_page
-            page_repos = filtered_repos[start_idx:end_idx]
 
             # Convert to response model
             repositories = [

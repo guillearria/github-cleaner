@@ -37,7 +37,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
     const [repositories, setRepositories] = useState<Repository[]>([]);
     const [selected, setSelected] = useState<number[]>([]);
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(100);
     const [totalCount, setTotalCount] = useState(0);
     const [search, setSearch] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -266,7 +266,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
                 </TableContainer>
 
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[100]}
                     component="div"
                     count={totalCount}
                     rowsPerPage={rowsPerPage}
