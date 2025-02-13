@@ -59,7 +59,7 @@ class GitHubService:
             else:
                 # Get repositories with sorting if specified
                 kwargs = {
-                    "affiliation": "owner"  # Only get repositories owned by the user
+                    "affiliation": "owner",  # Only get repositories owned by the user
                 }
                 
                 if sort:
@@ -74,11 +74,21 @@ class GitHubService:
                         kwargs["sort"] = "stargazers"
                 
                 # Single API call for both repos and count
-                repos = user.get_repos(**kwargs)
-                total_count = repos.totalCount
+                paginated_list = user.get_repos(**kwargs)
+                total_count = paginated_list.totalCount
 
-            # Get the specific page
-            page_repos = repos.get_page(page - 1)  # GitHub uses 0-based indexing
+                # Get all repositories for the current page
+                repos = []
+                start_idx = (page - 1) * per_page
+                end_idx = start_idx + per_page
+
+                # Use enumerate to efficiently get the slice we want
+                for idx, repo in enumerate(paginated_list):
+                    if idx >= end_idx:
+                        break
+                    if idx >= start_idx:
+                        repos.append(repo)
+
             total_pages = math.ceil(total_count / per_page)
 
             # Convert to response model
@@ -93,7 +103,7 @@ class GitHubService:
                     stars=repo.stargazers_count,
                     language=repo.language
                 )
-                for repo in page_repos
+                for repo in repos
             ]
 
             return RepositoryList(
