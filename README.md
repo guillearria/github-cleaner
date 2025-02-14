@@ -9,11 +9,13 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 ## Features
 
 - 🔐 Secure GitHub token-based authentication
-- 📋 List all accessible repositories with detailed information
+- 📋 List all owned repositories with detailed information
 - ✅ Bulk selection of repositories for archiving
-- 🔍 Search and filter repositories
+- 🔍 Real-time search functionality
 - 📊 Progress tracking for archive operations
-- 🎯 Simple and intuitive user interface
+- 🎯 Modern, responsive Material-UI interface
+- ⚡ Fast loading with skeleton states
+- 🔄 Efficient pagination for users with 100+ repositories
 
 ## Tech Stack
 
@@ -24,15 +26,21 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 - Docker for containerization
 - AWS (ECR & ECS) for deployment
 
-### Frontend (Coming Soon)
+### Frontend
 - React with TypeScript
-- Material-UI for components
-- Axios for API calls
+- Material-UI components
+- Modern, responsive UI
+- Features:
+  - Token-based authentication
+  - Repository listing with search
+  - Bulk selection and archiving
+  - Loading states and error handling
+  - Single-page display of up to 100 repositories
 
 ## Prerequisites
 
 - Python 3.11 (Required - newer versions not yet supported)
-- Node.js 16+
+- Node.js 18+ (recommended for Vite)
 - GitHub Personal Access Token with repo scope
 - Git
 - Docker (for production deployment)
@@ -45,19 +53,23 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 ```bash
 # Clone the repository
 git clone https://github.com/guillearria/github-cleaner.git
-cd github-cleaner/backend
+cd github-cleaner
 
-# Create virtual environment
+# Backend Setup
+cd backend
 py -3.11 -m venv venv
 source venv/Scripts/activate  # On Windows with Git Bash: source venv/Scripts/activate
-
-# Install the package in development mode
 pip install -e .  # This installs the project as an editable package
+
+# Frontend Setup
+cd ../frontend
+npm install
 ```
 
 2. **Configure Environment**
 ```bash
-# Copy environment file and edit it
+# Backend configuration
+cd backend
 cp .env.example .env
 
 # Required variables in .env:
@@ -68,52 +80,15 @@ FRONTEND_URL=http://localhost:3000
 GH_TEST_TOKEN=your_github_token_here  # Your GitHub Personal Access Token
 ```
 
-3. **Run the Server**
+3. **Run the Application**
 ```bash
+# Start the backend server
+cd backend
 uvicorn app.main:app --reload
-```
 
-### Testing
-
-```bash
-# Install test dependencies
-pip install pytest pytest-asyncio pytest-cov
-
-# Run tests with coverage
-cd backend
-pytest
-```
-
-### Docker Build (Production)
-
-```bash
-cd backend
-docker build -t github-cleaner-backend .
-docker run -p 8000:8000 github-cleaner-backend
-```
-
-## CI/CD Pipeline
-
-The project uses GitHub Actions for continuous integration and deployment.
-
-### CI Pipeline (on every push and PR)
-- Runs Python 3.11 tests
-- Performs code linting (black & flake8)
-- Generates test coverage reports
-- Uploads coverage to Codecov
-
-### CD Pipeline (on main branch and tags)
-- Builds Docker image
-- Pushes to Amazon ECR
-- Deploys to ECS
-
-### Required Secrets
-Set these in your GitHub repository settings:
-```
-GH_TEST_TOKEN - For running tests (GitHub Personal Access Token)
-AWS_ACCESS_KEY_ID - For AWS access
-AWS_SECRET_ACCESS_KEY - For AWS access
-AWS_REGION - Your AWS region
+# In a new terminal, start the frontend
+cd frontend
+npm run dev
 ```
 
 ## API Documentation
@@ -137,10 +112,12 @@ Response: { "valid": boolean, "username": string }
 GET /api/repositories
 Query params:
 - page: number (default: 1)
-- per_page: number (default: 30, max: 100)
+- per_page: number (default: 100)
 - search: string (optional)
 - sort: "updated" | "name" | "stars"
 - order: "asc" | "desc"
+
+Note: Only returns repositories owned by the authenticated user
 ```
 
 #### 3. Archive Repositories
