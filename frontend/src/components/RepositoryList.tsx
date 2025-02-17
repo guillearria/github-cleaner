@@ -40,6 +40,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
     const [rowsPerPage, setRowsPerPage] = useState(100);
     const [totalCount, setTotalCount] = useState(0);
     const [search, setSearch] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [archiving, setArchiving] = useState(false);
@@ -48,7 +49,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
         setLoading(true);
         setError(null);
         try {
-            const result = await getRepositories(page + 1, rowsPerPage, search);
+            const result = await getRepositories(page + 1, rowsPerPage, searchQuery);
             setRepositories(result.repositories);
             setTotalCount(result.total_count);
         } catch (err) {
@@ -60,7 +61,7 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
 
     useEffect(() => {
         fetchRepositories();
-    }, [page, rowsPerPage, search]);
+    }, [page, rowsPerPage, searchQuery]);
 
     const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
@@ -105,14 +106,30 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
     };
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearch(event.target.value);
+        const value = event.target.value;
+        if (value !== search) {
+            setSearch(value);
+        }
+    };
+
+    const handleSearchSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        const trimmedSearch = search.trim();
+        if (trimmedSearch !== searchQuery) {
+            setSearchQuery(trimmedSearch);
+            setPage(0);
+        }
+    };
+
+    const handleClearSearch = () => {
+        setSearch('');
+        setSearchQuery('');
         setPage(0);
     };
 
-    // Add loading skeleton rows
     const LoadingRows = () => (
         <>
-            {[...Array(rowsPerPage)].map((_, index) => (
+            {[...Array(Math.min(10, rowsPerPage))].map((_, index) => (
                 <TableRow key={index}>
                     <TableCell padding="checkbox">
                         <Skeleton variant="rectangular" width={20} height={20} />
@@ -151,12 +168,15 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
             <Paper sx={{ width: '100%', mb: 2, position: 'relative' }}>
-                {/* Show linear progress when paginating or searching */}
-                {loading && repositories.length > 0 && (
+                {loading && (
                     <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0 }} />
                 )}
 
-                <Box sx={{ p: 2, display: 'flex', gap: 2 }}>
+                <Box
+                    component="form"
+                    onSubmit={handleSearchSubmit}
+                    sx={{ p: 2, display: 'flex', gap: 2 }}
+                >
                     <TextField
                         placeholder="Search repositories..."
                         value={search}
@@ -167,7 +187,24 @@ export const RepositoryList: React.FC<RepositoryListProps> = ({ onLogout }) => {
                             startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                         }}
                         sx={{ flexGrow: 1 }}
+                        disabled={loading}
                     />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={loading || !search.trim()}
+                    >
+                        Search
+                    </Button>
+                    {searchQuery && (
+                        <Button
+                            variant="outlined"
+                            onClick={handleClearSearch}
+                            disabled={loading}
+                        >
+                            Clear
+                        </Button>
+                    )}
                     <Button
                         variant="contained"
                         color="primary"

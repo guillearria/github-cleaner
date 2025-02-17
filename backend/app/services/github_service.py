@@ -49,47 +49,44 @@ class GitHubService:
         try:
             user = self.github.get_user()
             
-            # Get paginated repositories using GitHub's pagination
-            if search:
-                # If searching, we need to use the search API
-                # Add 'user:username' to only get repos owned by the user
-                query = f"user:{user.login} {search} in:name"
-                repos = self.github.search_repositories(query)
-                total_count = repos.totalCount
+            # Get all repositories owned by the user
+            kwargs = {
+                "affiliation": "owner",
+            }
+            
+            if sort:
+                direction = "desc" if order == "desc" else "asc"
+                kwargs["direction"] = direction
+                
+                if sort == "updated":
+                    kwargs["sort"] = "updated"
+                elif sort == "name":
+                    kwargs["sort"] = "full_name"
+                elif sort == "stars":
+                    kwargs["sort"] = "stargazers"
+            
+            # Get all repositories
+            all_repos = list(user.get_repos(**kwargs))
+            
+            # Apply search filter if provided
+            if search and search.strip():
+                search = search.lower().strip()
+                filtered_repos = [
+                    repo for repo in all_repos
+                    if search in repo.name.lower() or 
+                       (repo.description and search in repo.description.lower())
+                ]
             else:
-                # Get repositories with sorting if specified
-                kwargs = {
-                    "affiliation": "owner",  # Only get repositories owned by the user
-                }
-                
-                if sort:
-                    direction = "desc" if order == "desc" else "asc"
-                    kwargs["direction"] = direction
-                    
-                    if sort == "updated":
-                        kwargs["sort"] = "updated"
-                    elif sort == "name":
-                        kwargs["sort"] = "full_name"
-                    elif sort == "stars":
-                        kwargs["sort"] = "stargazers"
-                
-                # Single API call for both repos and count
-                paginated_list = user.get_repos(**kwargs)
-                total_count = paginated_list.totalCount
+                filtered_repos = all_repos
 
-                # Get all repositories for the current page
-                repos = []
-                start_idx = (page - 1) * per_page
-                end_idx = start_idx + per_page
-
-                # Use enumerate to efficiently get the slice we want
-                for idx, repo in enumerate(paginated_list):
-                    if idx >= end_idx:
-                        break
-                    if idx >= start_idx:
-                        repos.append(repo)
-
+            # Calculate pagination
+            total_count = len(filtered_repos)
             total_pages = math.ceil(total_count / per_page)
+            
+            # Get page slice
+            start_idx = (page - 1) * per_page
+            end_idx = start_idx + per_page
+            page_repos = filtered_repos[start_idx:end_idx]
 
             # Convert to response model
             repositories = [
@@ -103,7 +100,7 @@ class GitHubService:
                     stars=repo.stargazers_count,
                     language=repo.language
                 )
-                for repo in repos
+                for repo in page_repos
             ]
 
             return RepositoryList(

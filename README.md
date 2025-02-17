@@ -11,7 +11,7 @@ GitHub Cleaner provides a user-friendly interface to help developers and organiz
 - 🔐 Secure GitHub token-based authentication
 - 📋 List all owned repositories with detailed information
 - ✅ Bulk selection of repositories for archiving
-- 🔍 Real-time search functionality
+- 🔍 Efficient repository search with clear results
 - 📊 Progress tracking for archive operations
 - 🎯 Modern, responsive Material-UI interface
 - ⚡ Fast loading with skeleton states
